@@ -73,6 +73,7 @@ mur, comme s'il n'y avait pas d'arête.
 
 def draw_square_maze(graph, path = [], draw_coordinates=False):
 
+  print("test")
   for u in graph.nodes():
     x, y = u
     
