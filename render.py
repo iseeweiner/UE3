@@ -73,7 +73,6 @@ mur, comme s'il n'y avait pas d'arête.
 
 def draw_square_maze(graph, path = [], draw_coordinates=False):
 
-  print("test")
   for u in graph.nodes():
     x, y = u
     
@@ -87,9 +86,13 @@ def draw_square_maze(graph, path = [], draw_coordinates=False):
     for v in [s for s in neighbours if s not in graph.successors(u)]:
       draw_square_wall(u, v)
 
-  for k in range(len(path) - 1):  
+  # On parcours la liste des coordonnées de la solution
+  for k in range(len(path) - 1):
+    # Coordonnée actuelle
     x1, y1 = path[k]
+    # Coordonnée suivante
     x2, y2 = path[k + 1]
+    # On trace un trait rouge entre les deux
     plot.gca().add_line( plot.Line2D( (x1, x2), (y1, y2), color='r' ) )
   
 
