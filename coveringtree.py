@@ -12,6 +12,8 @@ def extraire_min(F, distance):
     return min_s 
 
 def prim(G):
+    print("G: " + str(G))
+    print("G(len): " + str(len(G.adjacency)))
     ### TODO ####
     # C dict qui pour chaque sommet u associera la cout de connexion de u a l'arbre
     #C[(0,0)] = 0
@@ -21,14 +23,20 @@ def prim(G):
     P = {}
     for v in G.nodes():
         C[v] = math.inf
-        P[v] = 0
+        P[v] = []
     Q = G.nodes()
     while Q:
-        u = extraire_min(Q, C[u])
-        Q.remove(u)
+        print("Q: " + str(Q))
+        print("Q(len): " + str(len(Q)))
+        print("Q(type): " + str(type(Q)))
+        print("C: " + str(C))
+        #u = extraire_min(Q, C[u])
+        u = extraire_min(Q, C)
+        print("u: " + str(u))
+        Q.discard(u)
         for v in G.successors(u):
             if v in Q and G.weights[(u,v)] < C[v]:
                 C[v] = G.weights[(u,v)]
-                P[v] = u
+                P[v].append(u)
     return P
 
