@@ -18,8 +18,15 @@ class Maze:
         for i in range (height):
             for j in range (width):
                 list_nodes.append((j, i))    
-        for item in list_nodes:
-            newgraph.add_node(item)
+        for node in list_nodes:
+            newgraph.add_node(node)
+            j, i = node
+            if j - 1 >= 0:
+                newgraph.add_arc((node, (j - 1, i)))
+                newgraph.add_arc(((j - 1, i), node))
+            if i - 1 >= 0:
+                newgraph.add_arc((node, (j, i - 1)))
+                newgraph.add_arc(((j, i - 1), node))
         return newgraph
 
     def print_graph(self):
@@ -28,8 +35,14 @@ class Maze:
     def generate_maze(self):
         parent = coveringtree.prim(self.graph)
         print("parent: " + str(parent))
-        newgraph = graph.Graph()
-        newgraph.adjacency = parent
+        newgraph = self.generate_graph(self.width, self.height)
+        # A revoir
+        for node in parent:
+            if parent[node] != []:
+                print("Node: %s  /  Parents(node): %s" % (str(node), str(parent[node])))
+                newgraph.remove_arc((node, parent[node][0]))
+                newgraph.remove_arc((parent[node][0], node))         
+        #newgraph.adjacency = parent
         self.graph = newgraph
 
     def generate_grid(self, width, height):
@@ -46,26 +59,28 @@ class Maze:
                     if neighbour in list_nodes:
                         node = (j, i)
                         weight = random.randint(0, 1)
-                        # on defini un poids pour la paire de sommets, si il n'existe pas deja
-                        if not (node,neighbour) in grid.weights:
-                            grid.set_arc_weight((node,neighbour), weight)
-                        # on defni le meme poids pour la paire inverse, si il n'existe pas deja
-                        if not (neighbour,node) in grid.weights:
-                            grid.set_arc_weight((neighbour,node), weight)
-        # On defini les sommets
-        for position in list_nodes:
-            # On ajoute la position a la liste des sommets
-            grid.add_node(position)
-            j, i = position
-            # On genere la liste des voisins
-            neighbours = [(j, i + 1), (j + 1, i), (j, i - 1), (j - 1, i)]
-            # On initialise une liste vide de voisin accessible 
-            accessible_neighbours = []
-            for v in neighbours:
-                x, y = v
-                if x >= 0 and x < width and y >= 0 and y < height and grid.weights[(position, v)] == 0: # si on ne sort pas du cadre et que le voisin 'v' a un poids de 0
-                    accessible_neighbours.append(v) # ajoute le voisin 'v' dans la liste des voisins
-            grid.adjacency[position] = accessible_neighbours
+                        grid.add_arc((node,neighbour), weight)
+                        grid.add_arc((neighbour,node), weight)
+                        ## on defini un poids pour la paire de sommets, si il n'existe pas deja
+                        #if not (node,neighbour) in grid.weights:
+                        #    grid.set_arc_weight((node,neighbour), weight)
+                        ## on defni le meme poids pour la paire inverse, si il n'existe pas deja
+                        #if not (neighbour,node) in grid.weights:
+                        #    grid.set_arc_weight((neighbour,node), weight)
+#        # On defini les sommets
+#        for position in list_nodes:
+#            # On ajoute la position a la liste des sommets
+#            grid.add_node(position)
+#            j, i = position
+#            # On genere la liste des voisins
+#            neighbours = [(j, i + 1), (j + 1, i), (j, i - 1), (j - 1, i)]
+#            # On initialise une liste vide de voisin accessible 
+#            accessible_neighbours = []
+#            for v in neighbours:
+#                x, y = v
+#                if x >= 0 and x < width and y >= 0 and y < height and grid.weights[(position, v)] == 0: # si on ne sort pas du cadre et que le voisin 'v' a un poids de 0
+#                    accessible_neighbours.append(v) # ajoute le voisin 'v' dans la liste des voisins
+#            grid.adjacency[position] = accessible_neighbours
         self.graph = grid
 
 
