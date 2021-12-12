@@ -15,12 +15,13 @@ class Maze:
     def generate_graph(self, width, height):
         list_nodes = []
         newgraph = graph.Graph()
-        for i in range (height):
-            for j in range (width):
+        for j in range (width):
+            for i in range (height):
                 list_nodes.append((j, i))    
         for node in list_nodes:
             newgraph.add_node(node)
             j, i = node
+
             if j - 1 >= 0:
                 newgraph.add_arc((node, (j - 1, i)))
                 newgraph.add_arc(((j - 1, i), node))
@@ -34,54 +35,40 @@ class Maze:
 
     def generate_maze(self):
         parent = coveringtree.prim(self.graph)
-        print("parent: " + str(parent))
         newgraph = self.generate_graph(self.width, self.height)
         # A revoir
+        newgraph.adjacency = {}
         for node in parent:
             if parent[node] != []:
-                print("Node: %s  /  Parents(node): %s" % (str(node), str(parent[node])))
-                newgraph.remove_arc((node, parent[node][0]))
-                newgraph.remove_arc((parent[node][0], node))         
+                newgraph.add_arc((node, parent[node][0]))
+                newgraph.add_arc((parent[node][0], node))         
         #newgraph.adjacency = parent
         self.graph = newgraph
 
-    def generate_grid(self, width, height):
+    def generate_random(self):
         grid = graph.Graph()
-        list_nodes = []
-        for i in range (height):
-            for j in range (width):
-                list_nodes.append((j, i))    
-        # On defini des poids aleatoires
-        for i in range (height):
-            for j in range (width):
+        # On genere le graphe
+        for i in range (self.height):
+            for j in range (self.width):
+                # On genere la liste des voisons
                 neighbours = [(j, i + 1), (j + 1, i), (j, i - 1), (j - 1, i)]
+                # Pour chaque voisin
                 for neighbour in neighbours:
-                    if neighbour in list_nodes:
+                    # Si il est dans la grille
+                    x, y = neighbour
+                    if self.width -1 >= x >= 0 and self.height - 1 >= y >= 0:
                         node = (j, i)
                         weight = random.randint(0, 1)
-                        grid.add_arc((node,neighbour), weight)
-                        grid.add_arc((neighbour,node), weight)
-                        ## on defini un poids pour la paire de sommets, si il n'existe pas deja
-                        #if not (node,neighbour) in grid.weights:
-                        #    grid.set_arc_weight((node,neighbour), weight)
-                        ## on defni le meme poids pour la paire inverse, si il n'existe pas deja
-                        #if not (neighbour,node) in grid.weights:
-                        #    grid.set_arc_weight((neighbour,node), weight)
-#        # On defini les sommets
-#        for position in list_nodes:
-#            # On ajoute la position a la liste des sommets
-#            grid.add_node(position)
-#            j, i = position
-#            # On genere la liste des voisins
-#            neighbours = [(j, i + 1), (j + 1, i), (j, i - 1), (j - 1, i)]
-#            # On initialise une liste vide de voisin accessible 
-#            accessible_neighbours = []
-#            for v in neighbours:
-#                x, y = v
-#                if x >= 0 and x < width and y >= 0 and y < height and grid.weights[(position, v)] == 0: # si on ne sort pas du cadre et que le voisin 'v' a un poids de 0
-#                    accessible_neighbours.append(v) # ajoute le voisin 'v' dans la liste des voisins
-#            grid.adjacency[position] = accessible_neighbours
+                        grid.add_weighted_arc((node,neighbour), weight)
+                        grid.add_weighted_arc((neighbour,node), weight)
         self.graph = grid
+
+    def prim_resolver(self):
+        parent = coveringtree.prim(self.graph)
+        position = (0, 0)
+        while parent[position] != []:
+            self.solution.append(position)
+            position = parent[position][0]
 
 
     def resolution(self):
@@ -92,12 +79,12 @@ class Maze:
             # parcourir le poids des voisins de "position"
             possible_positions = []
             j, i = position
-            for arc in self.graph.successors(position):
+            for node in self.graph.successors(position):
                 # filter les positions en diagonale
-                if arc in [(j + 1, i), (j, i + 1), (j - 1, i), (j, i - 1)]:
+                if node in [(j + 1, i), (j, i + 1), (j - 1, i), (j, i - 1)]:
                     # filtre la position precedente
-                    if arc != previous:
-                        possible_positions.append(arc)
+                    if node != previous:
+                        possible_positions.append(node)
             # choix de la nouvelle position
             if len(possible_positions) == 0:
                 break

@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 class Graph:
   def __init__(self):
     self.adjacency = {}
@@ -17,10 +19,16 @@ class Graph:
     self.add_node(s2)
     self.weights[arc] = weight
     self.adjacency[s1].add(s2)
-    # Il faut ajouter le noeud s2 au adjacences si le poid est de 0
-    #if weight == 0:
-    #   self.adjacency[s1].add(s2)
     
+  def add_weighted_arc(self, arc, weight):
+    s1, s2 = arc
+    self.add_node(s1)
+    self.add_node(s2)
+    self.weights[arc] = weight
+    # Il faut ajouter le noeud s2 au adjacences si le poid est de 0
+    if weight == 0:
+       self.adjacency[s1].add(s2)
+
   def remove_arc(self, arc):
     if arc not in self.weights:
       return
@@ -37,7 +45,7 @@ class Graph:
     del self.adjancency[node]
       
   def nodes(self):
-    return set(self.adjacency)
+    return set(OrderedDict(sorted(self.adjacency.items())))
     
   def successors(self, node):
     return set(self.adjacency[node])

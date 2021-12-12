@@ -1,6 +1,7 @@
 import math
 import graph
 
+
 def extraire_min(F, distance): 
     min_dst = math.inf # la plus petite distance trouvée jusqu'à présent
     min_s = None  # le sommet associé à cette plus petite distance

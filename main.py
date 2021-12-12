@@ -1,10 +1,19 @@
 import maze
 
-test = maze.Maze(5, 5)
-test.graph = test.generate_graph(5, 5)
-print("Test.graph : " + str(test.graph.adjacency))
-#test.generate_grid(5, 5)
+
+
+# Creation d'un objet maze de 10/10
+test = maze.Maze(10, 10)
+
+# Generation du labyrinthe
 test.generate_maze()
+
+# Generation d'un labyrinthe random
+#test.generate_random()
+
+# Resolution
 #test.resolution()
-#print(test.solution)
+test.prim_resolver()
+
+# Affichage du graphe
 test.print_graph()
