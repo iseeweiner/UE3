@@ -1,7 +1,7 @@
 import math
 import graph
 
-
+# Renvoi le chemin minimum
 def extraire_min(F, distance): 
     min_dst = math.inf # la plus petite distance trouvée jusqu'à présent
     min_s = None  # le sommet associé à cette plus petite distance
@@ -12,8 +12,9 @@ def extraire_min(F, distance):
     F.remove(min_s) # on retire le plus petit sommet qu'on a trouvé de la file F
     return min_s 
 
+# Tache 2 / Algorithme de Prim
 def prim(G):
-    # C dict qui pour chaque sommet u associera la cout de connexion de u a l'arbre
+    # C dict qui pour chaque sommet u associera le cout de connexion de u a l'arbre
     #C[(0,0)] = 0
     C = {}
     # P dict qui pour chaque sommet u associera le parent de u dans l'arbre généré

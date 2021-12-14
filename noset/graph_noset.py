@@ -23,7 +23,6 @@ class Graph:
     self.add_node(s1)
     self.add_node(s2)
     self.weights[arc] = weight
-    # Il faut ajouter le noeud s2 au adjacences si le poid est de 0
     if weight == 0:
        self.adjacency[s1].append(s2)
 

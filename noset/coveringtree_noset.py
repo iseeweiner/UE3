@@ -1,5 +1,5 @@
 import math
-import graph
+import graph_noset as graph
 
 
 def extraire_min(F, distance): 

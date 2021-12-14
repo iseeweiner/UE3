@@ -18,6 +18,7 @@ class Graph:
     self.weights[arc] = weight
     self.adjacency[s1].add(s2)
     
+  # Nouvelle fonction pour ajout de poids aux arcs qui n'ajoute pas l'arc aux adjacences uniquement si le poids est de 0
   def add_weighted_arc(self, arc, weight):
     s1, s2 = arc
     self.add_node(s1)

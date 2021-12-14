@@ -6,121 +6,155 @@ import random
 
 class Maze:
 
+    # Tache 1 - 2 / Constructeur qui prend en paramètre une largeur et une hauteur et initialise l'attribut graphe
     def __init__(self, width, height):
         self.width = width
         self.height = height
         self.graph = self.generate_graph(width, height)
         self.solution = []
 
+    # Tache 1 - 1 / Méthode qui prend en paramètre une largeur et une hauteur et génère et retourne un graphe non orienté
     def generate_graph(self, width, height):
         list_nodes = []
         newgraph = graph.Graph()
+        # On génère toutes les coordonnées en fonction de la taille du graphe
         for j in range (width):
             for i in range (height):
+                # On ajoute la coordonnée à la liste des coordonées
                 list_nodes.append((j, i))    
+        # On parcourt toutes les coordonnées du graphe
         for node in list_nodes:
+            # On ajoute la coordonnée au graphe
             newgraph.add_node(node)
             j, i = node
-
+            # Si la case à gauche de la coordonnée existe
             if j - 1 >= 0:
+                # On rajoute l'arc entre la coordonnée et la case à gauche
                 newgraph.add_arc((node, (j - 1, i)))
+                # Et son inverse
                 newgraph.add_arc(((j - 1, i), node))
+            # Si la case en bas de la coordonnée existe
             if i - 1 >= 0:
+                # On rajoute l'arc entre la coordonnée et la case du bas
                 newgraph.add_arc((node, (j, i - 1)))
+                # Et son inverse
                 newgraph.add_arc(((j, i - 1), node))
+        # On retourne le graphe généré
         return newgraph
 
+    # Tache 1 - 3 / affiche le graphe à l'écran grâce au module render
     def print_graph(self):
-        render.draw_square_maze(self.graph, self.solution, False) # on donne le graph et la liste des solutions à afficher
+        # on donne le graphe et la liste des solutions à afficher
+        render.draw_square_maze(self.graph, self.solution, False)
 
+    # Tache 3 / Génération d'un labyrinthe
     def generate_maze(self):
+        # Tache 3 - 1 / Faire appel à prim avec pour paramètre le graphe support du labyrinthe
         parent = coveringtree.prim(self.graph)
+        # Tache 3 - 2 / Utiliser le dict généré à l'étape précédente pour créer un nouveau graphe
         newgraph = self.generate_graph(self.width, self.height)
-        # A revoir
+        # On réinitialise les adjacences pour pouvoir les remplacer avec celles données par prim (parent)
         newgraph.adjacency = {}
+        # On parcourt la liste des parents
         for node in parent:
+            # Si le parent n'est pas vide
             if parent[node] != []:
+                # On ajoute l'arc entre ces deux coordonnées
                 newgraph.add_arc((node, parent[node][0]))
+                # ainsi que son inverse
                 newgraph.add_arc((parent[node][0], node))         
-        #newgraph.adjacency = parent
+        # Tache 3 - 3 / Remplacer l'attribut contenant le graphe du labyrinthe par le graphe construit a l'étape précédente
         self.graph = newgraph
 
+    # Tache 4 / Génération d'un labyrinthe aléatoire
     def generate_random(self):
         grid = graph.Graph()
-        # On genere le graphe
+        # On génère chaque coordonnées
         for i in range (self.height):
             for j in range (self.width):
-                # On genere la liste des voisons
+                # On génère la liste des voisins pour la coordonnée en cours
                 neighbours = [(j, i + 1), (j + 1, i), (j, i - 1), (j - 1, i)]
                 # Pour chaque voisin
                 for neighbour in neighbours:
-                    # Si il est dans la grille
                     x, y = neighbour
+                    # Si il est dans la grille
                     if self.width -1 >= x >= 0 and self.height - 1 >= y >= 0:
                         node = (j, i)
+                        # On génère un poids aleatoire qui est soit 1 ou 0
+                        # /!\ la méthode uniform(0, 1) ne semble pas être adaptée ici, car elle ne renvoie pas un entier mais un nombre décimal qui n'est pas soit 1 soit 0.
                         weight = random.randint(0, 1)
+                        # On ajoute l'arc de ces deux coordonnées au graphe avec le poids aléatoire généré précedemment
                         grid.add_weighted_arc((node,neighbour), weight)
                         grid.add_weighted_arc((neighbour,node), weight)
+        # On enregistre le graphe généré dans l'attribut graph du constructeur
         self.graph = grid
 
+    # Tache 5 / Résolution d'un labyrinthe
     def prim_resolver(self):
+        # On fait appel à prim pour obtenir les parents
         parent = coveringtree.prim(self.graph)
-        print("Parent :" + str(parent))
+        # On part de la position de départ (0,0)
         position = (0, 0)
+        # Tant que l'élément "position" dans le dictionnaire des parents n'est pas vide
         while parent[position] != []:
+            # On ajoute cette position à la solution
             self.solution.append(position)
+            # On change l'élément "position" sur la nouvelle position
             position = parent[position][0]
     
+    # Tache 6 - 1 / Génération d'un labyrinthe biaisé horizontalement
     def generate_horizontal(self, biais):
+        # On fait appel à prim pour obtenir les parents
         newgraph = self.generate_graph(self.width, self.height)
         # On applique le biais aux poids
         for arc in newgraph.weights:
-            # On ajout le biais aux arretes horizontales
+            # On ajoute le biais aux arêtes horizontales
             j, i = arc[0]
             x, y = arc[1]
+            # Si l'arête est horizontale (coordonnées des ordonnées identiques pour les deux sommets)
             if i == y:
+                # On rajoute le biais
                 newgraph.weights[arc] += biais
-                print("Horizontal Arc: %s / Weight: %s" % (str(arc), str(newgraph.weights[arc])))
+        # On fait appel à prim pour obtenir les parents du nouveau graphe avec le biais ajouté
         parent = coveringtree.prim(newgraph)
+        # On réinitialise les adjacences du graphe pour insérer les nouveaux arcs donnés par prim
         newgraph.adjacency= {}
+        # On parcourt chaque coordonnée de parent
         for node in parent:
+            # Si la coordonnée a au moins un parent
             if parent[node] != []:
+                # On ajoute l'arc entre la coordonnée et son parent
                 newgraph.add_arc((node, parent[node][0]))
-                newgraph.add_arc((parent[node][0], node))  
+                # ainsi que l'inverse
+                newgraph.add_arc((parent[node][0], node)) 
+        # On enregistre le graphe généré dans l'attribut graph du constructeur
         self.graph = newgraph
 
+    # Tache 6 - 1 / Génération d'un labyrinthe biaisé verticalement
     def generate_vertical(self, biais):
+        # On génère un nouveau graphe
         newgraph = self.generate_graph(self.width, self.height)
         # On applique le biais aux poids
         for arc in newgraph.weights:
-            # On ajout le biais aux arretes horizontales
+            # On ajoute le biais aux arêtes verticales
             j, i = arc[0]
             x, y = arc[1]
+            # Si l'arête est verticale (coordonnées des abscisses identiques pour les deux sommets)
             if j == x:
+                # On rajoute le biais
                 newgraph.weights[arc] += biais
-                print("Veritcal Arc: %s / Weight: %s" % (str(arc), str(newgraph.weights[arc])))
+        # On fait appel à prim pour obtenir les parents du nouveau graphe avec le biais ajouté
         parent = coveringtree.prim(newgraph)
-        print("Parent: %s" % parent)
-        print("Weights: %s" % str(newgraph.weights))
+        # On réinitialise les adjacences du graphe pour insérer les nouveaux arcs donnés par prim
         newgraph.adjacency= {}
+        # On parcourt chaque coordonnée de parent
         for node in parent:
+            # Si la coordonnée a au moins un parent
             if parent[node] != []:
+                # On ajoute l'arc entre la coordonnée et son parent
                 newgraph.add_arc((node, parent[node][0]))
-                newgraph.add_arc((parent[node][0], node))  
+                # ainsi que l'inverse
+                newgraph.add_arc((parent[node][0], node)) 
+        # On enregistre le graphe généré dans l'attribut graph du constructeur 
         self.graph = newgraph
-        
-
-#Tache 6 : generation d’un labyrinthe biais ́e (3 points)
-#G ́en ́erer un labyrinthe se fait tr`es facilement ; en v ́erit ́e, il suffit de proc ́eder `a une exploration al ́eatoire en
-#profondeur du graphe support. Notre m ́ethode plus compliqu ́ee a cependant un avantage : nous allons pouvoir
-#facilement modifier notre g ́en ́eration pour transformer le rendu de nos labyrinthes.
-
-#Pour accomplir cette tˆache, rajouter deux fonctions `a la classe Maze. L’une g ́en`ere une grille, et prend en
-#param`etre suppl ́ementaire une valeur entre 0 et 1, qui repr ́esente le biais qui sera rajout ́e au poids des arˆetes
-#verticales. La seconde fonction fait de mˆeme, mais rajoute ce biais au poids des arˆetes horizontale.
-#Par l’action de ce biais, les arˆetes verticales (resp. horizontales) seront privil ́egi ́ees par l’algorithme de Prim.
-#Ainsi, un biais de 0 ne fera aucune diff ́erence, mais un biais vertical de 0.5 rendra les transition verticales bien
-#plus ch`eres par rapport au arˆetes horizontales, et donc choisies moins souvent. Un biais de 1 rendra toutes les
-#transitions de la direction choisie n ́ecessairement plus ch`eres que les transitions de l’autre direction ; ainsi, un
-#biais horizontal de 1 nous donnera un labyrinthe avec un nombre minimal de transitions horizontales.
-#Un exemple d’affichage est pr ́esent ́e en figure 2
+    
