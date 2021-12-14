@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 class Graph:
   def __init__(self):
     self.adjacency = {}
@@ -45,7 +43,7 @@ class Graph:
     del self.adjancency[node]
       
   def nodes(self):
-    return set(OrderedDict(sorted(self.adjacency.items())))
+    return set(self.adjacency)
     
   def successors(self, node):
     return set(self.adjacency[node])

@@ -65,79 +65,50 @@ class Maze:
 
     def prim_resolver(self):
         parent = coveringtree.prim(self.graph)
+        print("Parent :" + str(parent))
         position = (0, 0)
         while parent[position] != []:
             self.solution.append(position)
             position = parent[position][0]
-
-
-    def resolution(self):
-        position = (0, 0)
-        previous = ()
-        self.solution.append(position)
-        while position != (self.width - 1, self.height - 1):
-            # parcourir le poids des voisins de "position"
-            possible_positions = []
-            j, i = position
-            for node in self.graph.successors(position):
-                # filter les positions en diagonale
-                if node in [(j + 1, i), (j, i + 1), (j - 1, i), (j, i - 1)]:
-                    # filtre la position precedente
-                    if node != previous:
-                        possible_positions.append(node)
-            # choix de la nouvelle position
-            if len(possible_positions) == 0:
-                break
-            elif (j, i + 1) in possible_positions:
-                previous = position
-                position = (j, i + 1) # on deplace 'position' sur la position choisie
-                self.solution.append(position) # on rajoute la nouvelle position dans la liste des solutions       
-            elif (j + 1, i) in possible_positions:
-                previous = position
-                position = (j + 1, i) # on deplace 'position' sur la position choisie
-                self.solution.append(position) # on rajoute la nouvelle position dans la liste des solutions
-            else:
-                previous = position
-                position = possible_positions[0] # on deplace 'position' sur la position choisie
-                self.solution.append(position) # on rajoute la nouvelle position dans la liste des solutions   
-            # si aucun choix disponible et aucune solution choisie --> break
     
-    def generate_horizontal(self, width, height, biais):
-        grid = graph.Graph()
-        list_nodes = []
-        for i in range (height):
-            for j in range (width):
-                list_nodes.append((j, i))    
-        # On defini des poids aleatoires
-        for i in range (height):
-            for j in range (width):
-                neighbours = [(j, i + 1), (j + 1, i), (j, i - 1), (j - 1, i)]
-                for neighbour in neighbours:
-                    if neighbour in list_nodes:
-                        node = (j, i)
-                        weight = random.randint(0, 1)
-                        # on defini un poids pour la paire de sommets, si il n'existe pas deja
-                        if not (node,neighbour) in grid.weights:
-                            grid.set_arc_weight((node,neighbour), weight)
-                        # on defni le meme poids pour la paire inverse, si il n'existe pas deja
-                        if not (neighbour,node) in grid.weights:
-                            grid.set_arc_weight((neighbour,node), weight)
-        # On defini les sommets
-        for position in list_nodes:
-            # On ajoute la position a la liste des sommets
-            grid.add_node(position)
-            j, i = position
-            # On genere la liste des voisins
-            neighbours = [(j, i + 1), (j + 1, i), (j, i - 1), (j - 1, i)]
-            # On initialise une liste vide de voisin accessible 
-            accessible_neighbours = []
-            for v in neighbours:
-                x, y = v
-                if x >= 0 and x < width and y >= 0 and y < height and grid.weights[(position, v)] == 0: # si on ne sort pas du cadre et que le voisin 'v' a un poids de 0
-                    accessible_neighbours.append(v) # ajoute le voisin 'v' dans la liste des voisins
-            grid.adjacency[position] = accessible_neighbours
-        self.graph = grid
+    def generate_horizontal(self, biais):
+        newgraph = self.generate_graph(self.width, self.height)
+        # On applique le biais aux poids
+        for arc in newgraph.weights:
+            # On ajout le biais aux arretes horizontales
+            j, i = arc[0]
+            x, y = arc[1]
+            if i == y:
+                newgraph.weights[arc] += biais
+                print("Horizontal Arc: %s / Weight: %s" % (str(arc), str(newgraph.weights[arc])))
+        parent = coveringtree.prim(newgraph)
+        newgraph.adjacency= {}
+        for node in parent:
+            if parent[node] != []:
+                newgraph.add_arc((node, parent[node][0]))
+                newgraph.add_arc((parent[node][0], node))  
+        self.graph = newgraph
 
+    def generate_vertical(self, biais):
+        newgraph = self.generate_graph(self.width, self.height)
+        # On applique le biais aux poids
+        for arc in newgraph.weights:
+            # On ajout le biais aux arretes horizontales
+            j, i = arc[0]
+            x, y = arc[1]
+            if j == x:
+                newgraph.weights[arc] += biais
+                print("Veritcal Arc: %s / Weight: %s" % (str(arc), str(newgraph.weights[arc])))
+        parent = coveringtree.prim(newgraph)
+        print("Parent: %s" % parent)
+        print("Weights: %s" % str(newgraph.weights))
+        newgraph.adjacency= {}
+        for node in parent:
+            if parent[node] != []:
+                newgraph.add_arc((node, parent[node][0]))
+                newgraph.add_arc((parent[node][0], node))  
+        self.graph = newgraph
+        
 
 #Tache 6 : generation d’un labyrinthe biais ́e (3 points)
 #G ́en ́erer un labyrinthe se fait tr`es facilement ; en v ́erit ́e, il suffit de proc ́eder `a une exploration al ́eatoire en
