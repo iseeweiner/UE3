@@ -24,27 +24,24 @@ class Maze:
                 list_nodes.append((j, i))    
         # On parcourt toutes les coordonnées du graphe
         for node in list_nodes:
-            # On ajoute la coordonnée au graphe
-            newgraph.add_node(node)
             j, i = node
-            # Si la case à gauche de la coordonnée existe
-            if j - 1 >= 0:
-                # On rajoute l'arc entre la coordonnée et la case à gauche
-                newgraph.add_arc((node, (j - 1, i)))
-                # Et son inverse
-                newgraph.add_arc(((j - 1, i), node))
-            # Si la case en bas de la coordonnée existe
-            if i - 1 >= 0:
-                # On rajoute l'arc entre la coordonnée et la case du bas
-                newgraph.add_arc((node, (j, i - 1)))
-                # Et son inverse
-                newgraph.add_arc(((j, i - 1), node))
+            # On génère la liste des voisins pour la coordonnée en cours
+            neighbours = [(j, i + 1), (j + 1, i), (j, i - 1), (j - 1, i)]
+            # Pour chaque voisin
+            for neighbour in neighbours:
+                x, y = neighbour
+                # Si il est dans la grille
+                if self.width -1 >= x >= 0 and self.height - 1 >= y >= 0:
+                    node = (j, i)
+                    # On ajoute l'arc de ces deux coordonnées au graphe
+                    newgraph.add_arc((node,neighbour))
+                    newgraph.add_arc((neighbour,node))
         # On retourne le graphe généré
         return newgraph
 
-    # Tache 1 - 3 / affiche le graphe à l'écran grâce au module render
+    # Tache 1 - 3 / Affiche le graphe à l'écran grâce au module render
     def print_graph(self):
-        # on donne le graphe et la liste des solutions à afficher
+        # On donne le graphe et la liste des solutions à afficher
         render.draw_square_maze(self.graph, self.solution, False)
 
     # Tache 3 / Génération d'un labyrinthe
@@ -61,7 +58,7 @@ class Maze:
             if parent[node] != []:
                 # On ajoute l'arc entre ces deux coordonnées
                 newgraph.add_arc((node, parent[node][0]))
-                # ainsi que son inverse
+                # Ainsi que son inverse
                 newgraph.add_arc((parent[node][0], node))         
         # Tache 3 - 3 / Remplacer l'attribut contenant le graphe du labyrinthe par le graphe construit a l'étape précédente
         self.graph = newgraph
@@ -80,12 +77,20 @@ class Maze:
                     # Si il est dans la grille
                     if self.width -1 >= x >= 0 and self.height - 1 >= y >= 0:
                         node = (j, i)
-                        # On génère un poids aleatoire qui est soit 1 ou 0
-                        # /!\ la méthode uniform(0, 1) ne semble pas être adaptée ici, car elle ne renvoie pas un entier mais un nombre décimal qui n'est pas soit 1 soit 0.
-                        weight = random.randint(0, 1)
+                        # On génère un poids aleatoire entre 1 et 0
+                        weight = random.uniform(0, 1)
                         # On ajoute l'arc de ces deux coordonnées au graphe avec le poids aléatoire généré précedemment
-                        grid.add_weighted_arc((node,neighbour), weight)
-                        grid.add_weighted_arc((neighbour,node), weight)
+                        grid.add_arc((node,neighbour), weight)
+                        grid.add_arc((neighbour,node), weight)
+        parent = coveringtree.prim(grid)
+        grid.adjacency = {}
+        for node in parent:
+            # Si le parent n'est pas vide
+            if parent[node] != []:
+                # On ajoute l'arc entre ces deux coordonnées
+                grid.add_arc((node, parent[node][0]))
+                # Ainsi que son inverse
+                grid.add_arc((parent[node][0], node))       
         # On enregistre le graphe généré dans l'attribut graph du constructeur
         self.graph = grid
 
@@ -104,15 +109,15 @@ class Maze:
     
     # Tache 6 - 1 / Génération d'un labyrinthe biaisé horizontalement
     def generate_horizontal(self, biais):
-        # On fait appel à prim pour obtenir les parents
+        # On genere une nouvelle grille
         newgraph = self.generate_graph(self.width, self.height)
-        # On applique le biais aux poids
+        # On parcours les arcs
         for arc in newgraph.weights:
             # On ajoute le biais aux arêtes horizontales
             j, i = arc[0]
             x, y = arc[1]
             # Si l'arête est horizontale (coordonnées des ordonnées identiques pour les deux sommets)
-            if i == y:
+            if j == x:
                 # On rajoute le biais
                 newgraph.weights[arc] += biais
         # On fait appel à prim pour obtenir les parents du nouveau graphe avec le biais ajouté
@@ -125,14 +130,14 @@ class Maze:
             if parent[node] != []:
                 # On ajoute l'arc entre la coordonnée et son parent
                 newgraph.add_arc((node, parent[node][0]))
-                # ainsi que l'inverse
+                # Ainsi que l'inverse
                 newgraph.add_arc((parent[node][0], node)) 
         # On enregistre le graphe généré dans l'attribut graph du constructeur
         self.graph = newgraph
 
     # Tache 6 - 1 / Génération d'un labyrinthe biaisé verticalement
     def generate_vertical(self, biais):
-        # On génère un nouveau graphe
+        # On parcours les arcs
         newgraph = self.generate_graph(self.width, self.height)
         # On applique le biais aux poids
         for arc in newgraph.weights:
@@ -140,7 +145,7 @@ class Maze:
             j, i = arc[0]
             x, y = arc[1]
             # Si l'arête est verticale (coordonnées des abscisses identiques pour les deux sommets)
-            if j == x:
+            if y == i:
                 # On rajoute le biais
                 newgraph.weights[arc] += biais
         # On fait appel à prim pour obtenir les parents du nouveau graphe avec le biais ajouté
